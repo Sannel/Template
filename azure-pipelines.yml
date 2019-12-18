@@ -1,0 +1,72 @@
+trigger:
+- master
+- develop
+
+variables:
+  sdk_version: 3.1.x
+  dockerRepositoryRoot: sannel
+  dockerRepositoryName: house.template
+  dockerTagBase: $(Build.SourceBranchName)-$(Build.BuildId)
+  imageName: $(dockerRepositoryRoot)/$(dockerRepositoryName):$(dockerTagBase)
+  projectFolder: Sannel.House.Template
+  mainProjectPath: src/$(projectFolder)/$(projectFolder).csproj
+  mainConfigPath: src/$(projectFolder)/app_config
+  tagVersion: 3.1
+  tagCodeName: buster
+  hasTests: false
+  disableLinux: false
+  disableArm64: false
+  disableWindows: false
+  disableOSX: false
+
+name: $(date:yyyy.MM.dd)$(rev:.rr)
+
+jobs:
+- template: build/tasks/osx.yaml
+
+- template: build/tasks/linux-arm.yaml
+  parameters:
+    arch: arm32
+    archLong: arm32v7
+    ridSuffix: arm
+    qemuStatic: qemu-arm-static
+
+- template: build/tasks/linux-arm.yaml
+  parameters:
+    arch: arm64
+    archLong: arm64v8
+
+- template: build/tasks/linux.yaml
+
+- template: build/tasks/windows.yaml
+  parameters:
+    pool:
+      vmImage: 'windows-2019'
+    release: '1803'
+    arch: 'x64'
+
+- template: build/tasks/windows.yaml
+  parameters:
+    pool:
+      vmImage: 'windows-2019'
+    release: '1809'
+    arch: 'x64'
+
+- template: build/tasks/windows.yaml
+  parameters:
+    pool: 'WindowsLatest'
+    release: '1903'
+    arch: 'x64'
+
+- template: build/tasks/windows.yaml
+  parameters:
+    pool: 'WindowsLatest'
+    release: '1909'
+    arch: 'x64'
+
+- template: build/tasks/windows.yaml
+  parameters:
+    pool:
+      vmImage: 'windows-2019'
+    release: '1809'
+    arch: 'arm'
