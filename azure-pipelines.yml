@@ -2,71 +2,57 @@ trigger:
 - master
 - develop
 
-variables:
-  sdk_version: 3.1.x
-  dockerRepositoryRoot: sannel
-  dockerRepositoryName: house.template
-  dockerTagBase: $(Build.SourceBranchName)-$(Build.BuildId)
-  imageName: $(dockerRepositoryRoot)/$(dockerRepositoryName):$(dockerTagBase)
-  projectFolder: Sannel.House.Template
-  mainProjectPath: src/$(projectFolder)/$(projectFolder).csproj
-  mainConfigPath: src/$(projectFolder)/app_config
-  tagVersion: 3.1
-  tagCodeName: buster
-  hasTests: false
-  disableLinux: false
-  disableArm64: false
-  disableWindows: false
-  disableOSX: false
+pr:
+- master
+- develop
+- feature/*
 
-name: $(date:yyyy.MM.dd)$(rev:.rr)
+variables:
+  sdk_version: 5.0.x
+  sdk_support_preview: false
+  dockerRepositoryRoot: sannel
+  dockerTagBase: $(Build.SourceBranchName)-$(Build.BuildId)
+  mainImageName: house.service
+  repositoryName: Sannel.House.service
+  imageTag: $(Build.SourceBranchName)-$(Build.BuildId)
+  projectFolder: Sannel.House.service
+  tagVersion: 5.0
+  tagCodeName: buster
+  hasTests: true
+  Major: 0
+  Minor: 1
+
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: Sannel/Sannel.House.BuildScripts
+      endpoint: Sannel
 
 jobs:
-- template: build/tasks/osx.yaml
-
-- template: build/tasks/linux-arm.yaml
+- template: tasks/docker/linux-arm.yaml@templates
   parameters:
     arch: arm32
     archLong: arm32v7
     ridSuffix: arm
     qemuStatic: qemu-arm-static
+    project: $(projectFolder)
+    imageName: $(mainImageName)
+    jobName: service
+    repositoryName: $(repositoryName)
 
-- template: build/tasks/linux-arm.yaml
+- template: tasks/docker/linux-arm.yaml@templates
   parameters:
     arch: arm64
     archLong: arm64v8
+    project: $(projectFolder)
+    imageName: $(mainImageName)
+    jobName: service
+    repositoryName: $(repositoryName)
 
-- template: build/tasks/linux.yaml
-
-- template: build/tasks/windows.yaml
+- template: tasks/docker/linux-x64-alpine.yaml@templates
   parameters:
-    pool:
-      vmImage: 'windows-2019'
-    release: '1803'
-    arch: 'x64'
-
-- template: build/tasks/windows.yaml
-  parameters:
-    pool:
-      vmImage: 'windows-2019'
-    release: '1809'
-    arch: 'x64'
-
-- template: build/tasks/windows.yaml
-  parameters:
-    pool: 'WindowsLatest'
-    release: '1903'
-    arch: 'x64'
-
-- template: build/tasks/windows.yaml
-  parameters:
-    pool: 'WindowsLatest'
-    release: '1909'
-    arch: 'x64'
-
-- template: build/tasks/windows.yaml
-  parameters:
-    pool:
-      vmImage: 'windows-2019'
-    release: '1809'
-    arch: 'arm'
+    project: $(projectFolder)
+    imageName: $(mainImageName)
+    jobName: service
+    repositoryName: $(repositoryName)
